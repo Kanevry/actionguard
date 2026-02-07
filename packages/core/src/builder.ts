@@ -1,4 +1,7 @@
 import type { ZodSchema } from "zod";
+import { validateCsrf } from "./csrf";
+import { createRateLimiter } from "./rate-limit";
+import { sanitizeInput } from "./sanitize";
 import type {
 	ActionBuilder,
 	ActionGuardConfig,
@@ -14,7 +17,61 @@ interface PipelineStep {
 	config?: unknown;
 }
 
+type RateLimiterFn = ReturnType<typeof createRateLimiter>;
+
+/**
+ * Resolve a rate-limit key from the middleware context.
+ * Priority: per-action identifier fn > user ID > IP from headers > "anonymous".
+ */
+function resolveRateLimitKey(ctx: MiddlewareContext, rlConfig: RateLimitConfig): string {
+	if (rlConfig.identifier) {
+		return rlConfig.identifier(ctx);
+	}
+
+	if (ctx.user) {
+		return `user:${String(ctx.user)}`;
+	}
+
+	const forwarded = ctx.headers.get("x-forwarded-for");
+	if (forwarded) {
+		return `ip:${forwarded.split(",")[0].trim()}`;
+	}
+
+	const realIp = ctx.headers.get("x-real-ip");
+	if (realIp) {
+		return `ip:${realIp.trim()}`;
+	}
+
+	return "anonymous";
+}
+
 export function createActionGuard(config: ActionGuardConfig = {}): ActionGuardInstance {
+	// Cache rate limiter instances per step config object to avoid recreation on every request.
+	const rateLimiterCache = new Map<RateLimitConfig, RateLimiterFn>();
+
+	function getOrCreateLimiter(rlConfig: RateLimitConfig): RateLimiterFn {
+		let limiter = rateLimiterCache.get(rlConfig);
+		if (limiter) {
+			return limiter;
+		}
+
+		const globalRl = config.rateLimit;
+
+		limiter = createRateLimiter({
+			maxRequests: rlConfig.maxRequests ?? globalRl?.defaultMaxRequests ?? 100,
+			window: rlConfig.window ?? globalRl?.defaultWindow ?? "1m",
+			store:
+				rlConfig.store && typeof rlConfig.store === "object"
+					? (rlConfig.store as Parameters<typeof createRateLimiter>[0]["store"])
+					: globalRl?.store && typeof globalRl.store === "object"
+						? (globalRl.store as Parameters<typeof createRateLimiter>[0]["store"])
+						: undefined,
+		});
+
+		rateLimiterCache.set(rlConfig, limiter);
+		return limiter;
+	}
+
 	function createBuilder(steps: PipelineStep[] = []): ActionBuilder {
 		const builder: ActionBuilder = {
 			auth() {
@@ -56,7 +113,11 @@ export function createActionGuard(config: ActionGuardConfig = {}): ActionGuardIn
 									}
 									const user = await config.auth.resolve(ctx.headers);
 									if (!user) {
-										return { success: false, error: "Unauthorized", code: "AUTH_FAILED" };
+										return {
+											success: false,
+											error: "Unauthorized",
+											code: "AUTH_FAILED",
+										};
 									}
 									ctx.user = user;
 									break;
@@ -75,7 +136,21 @@ export function createActionGuard(config: ActionGuardConfig = {}): ActionGuardIn
 									break;
 								}
 								case "rateLimit": {
-									// In-memory rate limiting (v0.1)
+									const rlConfig = step.config as RateLimitConfig;
+									const limiter = getOrCreateLimiter(rlConfig);
+									const key = resolveRateLimitKey(ctx, rlConfig);
+									const rlResult = await limiter(key);
+									if (!rlResult.allowed) {
+										return {
+											success: false,
+											error: "Rate limit exceeded",
+											code: "RATE_LIMITED",
+										};
+									}
+									ctx.metadata.rateLimit = {
+										remaining: rlResult.remaining,
+										resetAt: rlResult.resetAt.toISOString(),
+									};
 									break;
 								}
 								case "audit": {
@@ -85,11 +160,18 @@ export function createActionGuard(config: ActionGuardConfig = {}): ActionGuardIn
 									break;
 								}
 								case "csrf": {
-									// CSRF validation (v0.1)
+									const csrfResult = validateCsrf(ctx.headers, config.csrf);
+									if (!csrfResult.valid) {
+										return {
+											success: false,
+											error: csrfResult.error ?? "CSRF validation failed",
+											code: "CSRF_FAILED",
+										};
+									}
 									break;
 								}
 								case "sanitize": {
-									// Input sanitization (v0.1)
+									ctx.input = sanitizeInput(ctx.input);
 									break;
 								}
 							}
