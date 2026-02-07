@@ -1,0 +1,50 @@
+{
+	"name": "@actionguard/pro",
+	"version": "0.1.0",
+	"description": "ActionGuard Pro - Redis store, DB adapters, PII masking, compliance presets",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"lint": "biome check src/",
+		"format": "biome format --write src/",
+		"test": "vitest run --passWithNoTests",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"actionguard",
+		"pro",
+		"redis",
+		"audit",
+		"pii",
+		"gdpr"
+	],
+	"author": "ActionGuard Contributors",
+	"license": "Commercial",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/actionguard/actionguard",
+		"directory": "packages/pro"
+	},
+	"peerDependencies": {
+		"actionguard": "workspace:*"
+	},
+	"devDependencies": {
+		"actionguard": "workspace:*",
+		"typescript": "^5.7.0",
+		"tsup": "^8.0.0",
+		"vitest": "^3.0.0"
+	}
+}

@@ -1,0 +1,36 @@
+{
+	"name": "actionguard-cli",
+	"version": "0.1.0",
+	"description": "CLI for ActionGuard - initialize and manage server action security",
+	"bin": {
+		"actionguard": "./dist/index.js"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"lint": "biome check src/",
+		"format": "biome format --write src/",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"actionguard",
+		"cli",
+		"nextjs",
+		"server-actions"
+	],
+	"author": "ActionGuard Contributors",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/actionguard/actionguard",
+		"directory": "packages/cli"
+	},
+	"devDependencies": {
+		"@types/node": "^25.2.1",
+		"tsup": "^8.0.0",
+		"typescript": "^5.7.0"
+	}
+}

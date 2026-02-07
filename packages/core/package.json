@@ -1,0 +1,77 @@
+{
+	"name": "actionguard",
+	"version": "0.1.0",
+	"description": "Security middleware for Next.js Server Actions. Auth, rate limiting, audit logging — in one line of code.",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		},
+		"./auth/supabase": {
+			"types": "./dist/auth/supabase.d.ts",
+			"import": "./dist/auth/supabase.mjs",
+			"require": "./dist/auth/supabase.js"
+		},
+		"./auth/next-auth": {
+			"types": "./dist/auth/next-auth.d.ts",
+			"import": "./dist/auth/next-auth.mjs",
+			"require": "./dist/auth/next-auth.js"
+		},
+		"./auth/custom": {
+			"types": "./dist/auth/custom.d.ts",
+			"import": "./dist/auth/custom.mjs",
+			"require": "./dist/auth/custom.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup",
+		"dev": "tsup --watch",
+		"lint": "biome check src/",
+		"format": "biome format --write src/",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"typecheck": "tsc --noEmit"
+	},
+	"keywords": [
+		"nextjs",
+		"server-actions",
+		"security",
+		"middleware",
+		"rate-limiting",
+		"audit-logging",
+		"csrf",
+		"typescript",
+		"zod"
+	],
+	"author": "ActionGuard Contributors",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/actionguard/actionguard",
+		"directory": "packages/core"
+	},
+	"homepage": "https://actionguard.dev",
+	"bugs": "https://github.com/actionguard/actionguard/issues",
+	"peerDependencies": {
+		"zod": ">=3.0.0"
+	},
+	"peerDependenciesMeta": {
+		"zod": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@types/node": "^25.2.1",
+		"tsup": "^8.0.0",
+		"typescript": "^5.7.0",
+		"vitest": "^3.0.0",
+		"zod": "^3.24.0"
+	}
+}

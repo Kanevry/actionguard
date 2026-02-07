@@ -1,0 +1,7 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "env-secrets"
+description = "Prevent secrets from being committed"
+regex = '''(?i)(ANTHROPIC_API_KEY|DISCORD_BOT_TOKEN|OPENCLAW_GATEWAY_TOKEN|SUPABASE_SERVICE_ROLE_KEY|STRIPE_SECRET_KEY|DATABASE_URL|REDIS_URL|NPM_TOKEN|ACTIONGUARD_LICENSE_KEY)\s*=\s*['\"]?[a-zA-Z0-9_\-\.]{10,}'''

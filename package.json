@@ -1,0 +1,53 @@
+{
+	"name": "actionguard-monorepo",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Security middleware for Next.js Server Actions",
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"lint": "turbo run lint",
+		"format": "turbo run format",
+		"test": "turbo run test",
+		"typecheck": "turbo run typecheck",
+		"prepare": "husky",
+		"changeset": "changeset",
+		"release": "turbo run build && changeset publish"
+	},
+	"keywords": [
+		"nextjs",
+		"server-actions",
+		"security",
+		"middleware",
+		"rate-limiting",
+		"audit-logging",
+		"csrf",
+		"typescript"
+	],
+	"author": "ActionGuard Contributors",
+	"license": "MIT",
+	"packageManager": "pnpm@10.28.0",
+	"engines": {
+		"node": ">=20"
+	},
+	"lint-staged": {
+		"*.{ts,tsx,js,jsx}": [
+			"biome check --write"
+		],
+		"*.{json,md,yaml,yml}": [
+			"biome format --write"
+		]
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.14",
+		"@changesets/cli": "^2.29.8",
+		"@commitlint/cli": "^20.4.1",
+		"@commitlint/config-conventional": "^20.4.1",
+		"husky": "^9.1.7",
+		"lint-staged": "^16.2.7",
+		"tsup": "^8.5.1",
+		"turbo": "^2.8.3",
+		"typescript": "^5.9.3",
+		"vitest": "^3.2.4"
+	}
+}

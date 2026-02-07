@@ -1,0 +1,46 @@
+# ActionGuard
+
+> Security middleware for Next.js Server Actions. Auth, rate limiting, audit logging — in one line of code.
+
+## What it does
+
+ActionGuard provides authentication, rate limiting, CSRF protection, input sanitization, and audit logging for Next.js Server Actions through a composable middleware pipeline. It follows the builder pattern for a clean, chainable API.
+
+## Quick Start
+
+Install:
+npm install actionguard
+
+Configure:
+import { createActionGuard } from 'actionguard';
+import { customAuth } from 'actionguard/auth/custom';
+
+const guard = createActionGuard({
+  auth: customAuth(async (headers) => {
+    // resolve user from headers/cookies
+    return { id: '1', role: 'admin' };
+  }),
+});
+
+Use in a Server Action:
+'use server';
+export const deleteItem = guard
+  .auth()
+  .rateLimit({ maxRequests: 10, window: '1m' })
+  .audit({ action: 'DELETE', resource: 'items' })
+  .action(async ({ input, ctx }) => {
+    // ctx.user is typed and guaranteed to exist
+    return { deleted: true };
+  });
+
+## Packages
+
+- actionguard: Core middleware library (MIT)
+- actionguard-cli: CLI for project setup (MIT)
+- @actionguard/pro: Redis store, DB adapters, PII masking (Commercial)
+
+## Links
+
+- GitHub: https://github.com/actionguard/actionguard
+- Docs: https://actionguard.dev
+- npm: https://www.npmjs.com/package/actionguard
